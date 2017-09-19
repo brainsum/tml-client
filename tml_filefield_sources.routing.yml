@@ -1,0 +1,7 @@
+tml_filefield_sources.modal_browser_form:
+  path: 'tml_filefield_sources/modal-browser-form'
+  defaults:
+    _form:  '\Drupal\tml_filefield_sources\Form\ModalBrowserForm'
+    _title: 'Modal Browser Form'
+  requirements:
+    _permission: 'access content'

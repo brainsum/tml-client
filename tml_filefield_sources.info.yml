@@ -1,0 +1,7 @@
+name: "TML Remote URL textfield"
+type: module
+description: Tieto media library remote file field source.
+core: 8.x
+package: Custom
+dependencies:
+  - filefield_sources:filefield_sources

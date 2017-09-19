@@ -1,0 +1,31 @@
+<?php
+
+/**
+ * @file
+ * Module file for the Tieto Media Library entioty browser.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function tml_filefield_sources_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.tml_filefield_sources':
+      return check_markup(file_get_contents(dirname(__FILE__) . '/README.md'));
+  }
+}
+
+/**
+ * Returns a list of widgets that are compatible with FileField Sources.
+ *
+ * FileField Sources works with the most common widgets used with Drupal (the
+ * standard Image and File widgets). Any module that provides another widget
+ * for uploading files may add compatibility with FileField Sources by
+ * implementing this hook and returning the widgets that their module supports.
+ */
+function tml_filefield_sources_filefield_sources_widgets() {
+  // Add any widgets that your module supports here.
+  return ['tml_remote'];
+}
