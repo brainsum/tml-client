@@ -234,7 +234,7 @@ class TMLRemote extends Remote {
 
     $button = [
       '#type' => 'link',
-      '#title' => t('TML browser'),
+      '#title' => t('Open TML browser'),
       '#url' => Url::fromRoute(
         'tml_filefield_sources.modal_browser_form',
         [],
@@ -246,6 +246,7 @@ class TMLRemote extends Remote {
           ],
         ]
       ),
+      '#attributes' => ['class' => ['button']],
     ];
 
     $rendered_button = drupal_render($button);

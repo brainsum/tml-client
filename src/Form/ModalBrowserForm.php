@@ -137,8 +137,8 @@ class ModalBrowserForm extends FormBase {
     }
     else {
       $image_url = $form_state->get('tml_media_image_url');
-      $response->addCommand(new InvokeCommand('.filefield-source-tml_remote input', 'val', [$image_url]));
-      $response->addCommand(new InvokeCommand('.filefield-source-tml_remote button', 'mousedown'));
+      $response->addCommand(new InvokeCommand('.filefield-source-tml_remote input[type=text]', 'val', [$image_url]));
+      $response->addCommand(new InvokeCommand('.filefield-source-tml_remote input[type=submit]', 'mousedown'));
       $response->addCommand(new CloseModalDialogCommand());
     }
     return $response;
@@ -149,7 +149,7 @@ class ModalBrowserForm extends FormBase {
    */
   private function getRestApiMediaLister(array &$form, FormStateInterface $form_state) {
     $myConfig = \Drupal::config('tml_entity_browser');
-    $rest_api_url = 'http://tml.gubo.brainsum.com//api/v1/tml_media_library';
+    $rest_api_url = 'http://tml.gubo.brainsum.com/api/v1/tml_media_library';
     $username = $myConfig->get('username');
     $password = $myConfig->get('password');
 
