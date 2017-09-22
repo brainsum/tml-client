@@ -2,11 +2,12 @@
 Define 'TML Remote URL textfield' filefield source.
   
 ## Configuration
-Add TML Rest API basic auth credentials to your settings.php:
+- Set TML Rest API URI at form widget settings.
+- Add TML Rest API basic auth credentials to your settings.php:
 
-    /**
-     * TML entity browser crdetials settings.
-     */
-    $config['tml_entity_browser']['username'] = 'USERNAME';
-    $config['tml_entity_browser']['password'] = 'PASSWORD';
+      /**
+      * TML entity browser crdetials settings.
+      */
+      $config['tml_filefield_sources']['username'] = 'USERNAME';
+      $config['tml_filefield_sources']['password'] = 'PASSWORD';
 

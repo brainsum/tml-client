@@ -1,5 +1,5 @@
 tml_filefield_sources.modal_browser_form:
-  path: 'tml_filefield_sources/modal-browser-form'
+  path: 'tml_filefield_sources/modal-browser-form/{entity_type}/{bundle}/{form_mode}/{field_name}'
   defaults:
     _form:  '\Drupal\tml_filefield_sources\Form\ModalBrowserForm'
     _title: 'Modal Browser Form'

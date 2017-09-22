@@ -26,8 +26,45 @@ class ModalBrowserForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
-    $this->getRestApiMediaLister($form, $form_state);
+  public function buildForm(array $form, FormStateInterface $form_state, $entity_type = NULL, $bundle = NULL, $form_mode = NULL, $field_name = NULL) {
+    $field_widget_settings = \Drupal::entityTypeManager()
+      ->getStorage('entity_form_display')
+      ->load($entity_type . '.' . $bundle . '.' . $form_mode)->getComponent($field_name);
+    $settings = $field_widget_settings['third_party_settings']['filefield_sources']['filefield_sources']['source_tml_remote'];
+    $rest_api_url = $settings['api_url'];
+
+    $myConfig = \Drupal::config('tml_filefield_sources');
+    $username = $myConfig->get('username');
+    $password = $myConfig->get('password');
+
+    $page = $form_state->get('page');
+    if ($page === NULL) {
+      $form_state->set('page', 0);
+      $page = 0;
+    }
+
+    $query = [];
+    $query['page'] = $page;
+    $query['items_per_page'] = $settings['items_per_page'];
+
+    $user_input = $form_state->getUserInput();
+    if (isset($user_input['name']) && !empty($user_input['name'])) {
+      $query['name'] = $user_input['name'];
+    }
+    if (isset($user_input['category']) && !empty($user_input['category'])) {
+      $query['category_tid'] = $user_input['category'];
+    }
+    $query_str = UrlHelper::buildQuery($query);
+    $rest_api_url = $rest_api_url . '?' . $query_str;
+
+    $client = new Client();
+    $response = $client->get($rest_api_url, [
+      'headers' => ['Authorization' => 'Basic ' . base64_encode("$username:$password")],
+    ]);
+    if (200 === $response->getStatusCode()) {
+      $response = json_decode($response->getBody());
+      $form['tml_entity_browser'] = $this->renderFormElements($response, $form_state);
+    }
 
     $form['#prefix'] = '<div id="tml_media-modal-form">';
     $form['#suffix'] = '</div>';
@@ -142,43 +179,6 @@ class ModalBrowserForm extends FormBase {
       $response->addCommand(new CloseModalDialogCommand());
     }
     return $response;
-  }
-
-  /**
-   * REST API call.
-   */
-  private function getRestApiMediaLister(array &$form, FormStateInterface $form_state) {
-    $myConfig = \Drupal::config('tml_entity_browser');
-    $rest_api_url = 'http://tml.gubo.brainsum.com/api/v1/tml_media_library';
-    $username = $myConfig->get('username');
-    $password = $myConfig->get('password');
-
-    $page = $form_state->get('page');
-    if ($page === NULL) {
-      $form_state->set('page', 0);
-      $page = 0;
-    }
-
-    $query = [];
-    $query['page'] = $page;
-    $user_input = $form_state->getUserInput();
-    if (isset($user_input['name']) && !empty($user_input['name'])) {
-      $query['name'] = $user_input['name'];
-    }
-    if (isset($user_input['category']) && !empty($user_input['category'])) {
-      $query['category_tid'] = $user_input['category'];
-    }
-    $query_str = UrlHelper::buildQuery($query);
-    $rest_api_url = $rest_api_url . '?' . $query_str;
-
-    $client = new Client();
-    $response = $client->get($rest_api_url, [
-      'headers' => ['Authorization' => 'Basic ' . base64_encode("$username:$password")],
-    ]);
-    if (200 === $response->getStatusCode()) {
-      $response = json_decode($response->getBody());
-      $form['tml_entity_browser'] = $this->renderFormElements($response, $form_state);
-    }
   }
 
   /**

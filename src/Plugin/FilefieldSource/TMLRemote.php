@@ -8,6 +8,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Field\WidgetInterface;
 
 /**
  * FileField source plugin to allow downloading a file from Tieto media library.
@@ -20,6 +21,8 @@ use Drupal\Component\Serialization\Json;
  * )
  */
 class TMLRemote extends Remote {
+
+  const TML_REMOTE_LISTER_ITEM_NUM = 10;
 
   /**
    * {@inheritdoc}
@@ -177,6 +180,12 @@ class TMLRemote extends Remote {
    * {@inheritdoc}
    */
   public static function process(array &$element, FormStateInterface $form_state, array &$complete_form) {
+    $routing_params = [
+      'entity_type' => $element['#entity_type'],
+      'bundle' => $element['#bundle'],
+      'form_mode' => 'default',
+      'field_name' => $element['#field_name'],
+    ];
     $element['tml_filefield_remote'] = array(
       '#weight' => 100.5,
       '#theme' => 'filefield_sources_element',
@@ -184,6 +193,7 @@ class TMLRemote extends Remote {
       // Required for proper theming.
       '#filefield_source' => TRUE,
       '#filefield_sources_hint_text' => FILEFIELD_SOURCE_REMOTE_HINT_TEXT,
+      '#filefield_sources_tml_remote_routing_params' => $routing_params,
     );
 
     $element['tml_filefield_remote']['url'] = array(
@@ -229,7 +239,6 @@ class TMLRemote extends Remote {
    */
   public static function element($variables) {
     $element = $variables['element'];
-
     $element['url']['#field_suffix'] = drupal_render($element['transfer']);
 
     $button = [
@@ -237,7 +246,7 @@ class TMLRemote extends Remote {
       '#title' => t('Open TML browser'),
       '#url' => Url::fromRoute(
         'tml_filefield_sources.modal_browser_form',
-        [],
+        $element['#filefield_sources_tml_remote_routing_params'],
         [
           'attributes' => [
             'class' => ['use-ajax'],
@@ -253,6 +262,47 @@ class TMLRemote extends Remote {
 
     // @todo - hide element with css.
     return '<div class="filefield-source filefield-source-tml_remote clear-block"><div style="display: none;">' . drupal_render($element['url']) . '</div>' . $rendered_button . '</div>';
+  }
+
+  /**
+   * Implements hook_filefield_source_settings().
+   */
+  public static function settings(WidgetInterface $plugin) {
+    $settings = $plugin->getThirdPartySetting('filefield_sources', 'filefield_sources', array(
+      'source_tml_remote' => array(
+        'api_url' => NULL,
+        'items_per_page' => self::TML_REMOTE_LISTER_ITEM_NUM,
+      ),
+    ));
+
+    $return['source_tml_remote'] = array(
+      '#title' => t('TML remote settings'),
+      '#type' => 'details',
+      '#description' => t('Tieto media library - enable Tieto media library browser'),
+      '#weight' => 10,
+      '#states' => array(
+        'visible' => array(
+          ':input[name="fields[field_file_image][settings_edit_form][third_party_settings][filefield_sources][filefield_sources][sources][tml_remote]"]' => array('checked' => TRUE),
+        ),
+      ),
+    );
+    $return['source_tml_remote']['api_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Api URL'),
+      '#default_value' => isset($settings['source_tml_remote']['api_url']) ? $settings['source_tml_remote']['api_url'] : NULL,
+      '#size' => 60,
+      '#maxlength' => 128,
+      '#description' => t('The API Url for Tieto media library.'),
+    );
+    $return['source_tml_remote']['items_per_page'] = array(
+      '#type' => 'number',
+      '#min' => 1,
+      '#title' => t('Items to display'),
+      '#description' => t('Number of items per page for Tieto media library.'),
+      '#default_value' => isset($settings['source_tml_remote']['items_per_page']) ? $settings['source_tml_remote']['items_per_page'] : self::TML_REMOTE_LISTER_ITEM_NUM,
+    );
+
+    return $return;
   }
 
 }
